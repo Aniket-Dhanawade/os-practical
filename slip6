@@ -1,0 +1,189 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Function to sort the request list in ascending order
+void sort_requests(int requests[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+}
+
+// Function to implement C-SCAN algorithm
+void c_scan(int requests[], int n, int head, char direction) {
+    int total_head_movements = 0;
+    int min_request = 0, max_request = 199; // assuming total disk blocks = 200
+    int current_position = head;
+    int service_order[n];
+    int serviced_count = 0;
+
+    // Sort the request list in ascending order
+    sort_requests(requests, n);
+
+    // Scan to the right
+    if (direction == 'R') {
+        for (int i = 0; i < n; i++) {
+            if (requests[i] >= head) {
+                min_request = requests[i];
+                break;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (requests[i] > head) {
+                max_request = requests[i];
+                break;
+            }
+        }
+
+        // Head movement to min_request
+        total_head_movements += abs(current_position - min_request);
+        current_position = min_request;
+
+        // Head movement to max_request
+        total_head_movements += abs(current_position - max_request);
+        current_position = max_request;
+
+        // Update serviced requests
+        for (int i = 0; i < n; i++) {
+            if (requests[i] >= head && requests[i] <= max_request) {
+                service_order[serviced_count++] = requests[i];
+            }
+        }
+    }
+
+    // Display the order of service
+    printf("Order of Service: ");
+    for (int i = 0; i < serviced_count; i++) {
+        printf("%d ", service_order[i]);
+    }
+    printf("\n");
+
+    printf("Total number of head movements: %d\n", total_head_movements);
+}
+
+int main() {
+    int total_blocks, head, n;
+    char direction;
+    
+    printf("Enter the total number of disk blocks: ");
+    scanf("%d", &total_blocks);
+
+    printf("Enter the number of requests: ");
+    scanf("%d", &n);
+
+    int requests[n];
+    printf("Enter the disk request string: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter the starting head position: ");
+    scanf("%d", &head);
+
+    printf("Enter the direction (L for left, R for right): ");
+    scanf(" %c", &direction);
+
+    c_scan(requests, n, head, direction);
+
+    return 0;
+}
+
+
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_BLOCKS 100
+
+// Function to initialize disk blocks
+void initialize_disk(int disk[], int n) {
+    for (int i = 0; i < n; i++) {
+        disk[i] = 0;
+    }
+}
+
+// Function to randomly mark some blocks as allocated
+void allocate_blocks(int disk[], int n) {
+    int num_allocated = rand() % (n/2) + 1; // Randomly allocate up to half of the disk blocks
+    for (int i = 0; i < num_allocated; i++) {
+        int block = rand() % n;
+        disk[block] = 1;
+    }
+}
+
+// Function to display the bit vector
+void show_bit_vector(int disk[], int n) {
+    printf("Bit Vector:\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", disk[i]);
+    }
+    printf("\n");
+}
+
+// Function to create a new file
+void create_new_file() {
+    printf("New file created.\n");
+}
+
+// Function to show directory
+void show_directory() {
+    printf("Directory:\n");
+    // Add code to display directory contents if needed
+}
+
+int main() {
+    int disk[MAX_BLOCKS];
+    int n;
+
+    // Seed random number generator
+    srand(time(NULL));
+
+    printf("Enter the number of blocks on disk: ");
+    scanf("%d", &n);
+
+    if (n <= 0 || n > MAX_BLOCKS) {
+        printf("Invalid number of blocks. Exiting...\n");
+        return 1;
+    }
+
+    initialize_disk(disk, n);
+    allocate_blocks(disk, n);
+
+    int choice;
+    do {
+        printf("\nMenu:\n");
+        printf("1. Show Bit Vector\n");
+        printf("2. Create New File\n");
+        printf("3. Show Directory\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1:
+                show_bit_vector(disk, n);
+                break;
+            case 2:
+                create_new_file();
+                break;
+            case 3:
+                show_directory();
+                break;
+            case 4:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    } while(choice != 4);
+
+    return 0;
+}
