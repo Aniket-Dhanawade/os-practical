@@ -1,0 +1,193 @@
+#include <stdio.h>
+
+#define MAX_PROCESSES 5
+#define MAX_RESOURCES 3
+
+int available[MAX_RESOURCES] = {0, 0, 0};
+int allocation[MAX_PROCESSES][MAX_RESOURCES] = {
+    {0, 1, 0},  // Allocation matrix for processes
+    {2, 0, 0},
+    {3, 0, 3},
+    {2, 1, 1},
+    {0, 0, 2}};
+int max[MAX_PROCESSES][MAX_RESOURCES] = {
+    {0, 0, 0},  // Maximum matrix for processes
+    {2, 0, 2},
+    {3, 0, 0},
+    {1, 0, 0},
+    {0, 0, 2}};
+int need[MAX_PROCESSES][MAX_RESOURCES];  // Need matrix for processes
+
+// Function to calculate the need matrix
+void calculateNeedMatrix() {
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        for (int j = 0; j < MAX_RESOURCES; ++j) {
+            need[i][j] = max[i][j] - allocation[i][j];
+        }
+    }
+}
+
+// Function to check if the system is in a safe state
+int isSafe() {
+    int work[MAX_RESOURCES];  // Available resources
+    int finish[MAX_PROCESSES] = {0};  // Flag to mark processes as finished
+    
+    // Initialize work with available resources
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        work[i] = available[i];
+    }
+
+    int count = 0;
+    while (count < MAX_PROCESSES) {
+        int found = 0;  // Flag to indicate if a safe sequence is found
+        for (int i = 0; i < MAX_PROCESSES; ++i) {
+            if (!finish[i]) {
+                int j;
+                for (j = 0; j < MAX_RESOURCES; ++j) {
+                    if (need[i][j] > work[j]) {
+                        break;
+                    }
+                }
+                if (j == MAX_RESOURCES) {
+                    // If all resources for process i can be allocated, mark it as finished
+                    for (int k = 0; k < MAX_RESOURCES; ++k) {
+                        work[k] += allocation[i][k];
+                    }
+                    finish[i] = 1;
+                    found = 1;
+                    printf("P%d ", i);  // Print process number in safe sequence
+                    ++count;
+                }
+            }
+        }
+        if (!found) {
+            printf("\nUnsafe state! System can't achieve a safe state.\n");
+            return 0;  // System is not in a safe state
+        }
+    }
+    printf("\nSafe state! Safe sequence: ");
+    return 1;  // System is in a safe state
+}
+
+int main() {
+    printf("Need Matrix:\n");
+    calculateNeedMatrix();  // Calculate and print the need matrix
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        printf("P%d: ", i);
+        for (int j = 0; j < MAX_RESOURCES; ++j) {
+            printf("%d ", need[i][j]);  // Print need matrix for each process
+        }
+        printf("\n");
+    }
+
+    printf("\n");
+    
+    printf(isSafe() ? "\n" : "");  // Check if the system is in a safe state
+    
+    return 0;
+}
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+// Function to compare two integers (used for sorting)
+int compare(const void *a, const void *b) {
+    return (*(int *)a - *(int *)b);
+}
+
+// Function to simulate the SCAN algorithm
+void scan(int requests[], int n, int start, char direction) {
+    int head_movement = 0; // Variable to track total head movements
+    int current_pos = start; // Initialize current position of head
+    int i, index = 0;
+
+    // Determine the index where the head will start scanning
+    if (direction == 'L') {
+        for (i = 0; i < n; ++i) {
+            if (requests[i] < start) {
+                index = i;
+            }
+        }
+    } else if (direction == 'R') {
+        for (i = 0; i < n; ++i) {
+            if (requests[i] > start) {
+                index = i;
+                break;
+            }
+        }
+    }
+
+    // Scan the requests in the specified direction
+    if (direction == 'L') {
+        // Scan left from starting position
+        for (i = index; i >= 0; --i) {
+            printf("%d ", requests[i]);
+            head_movement += abs(current_pos - requests[i]); // Calculate head movement
+            current_pos = requests[i]; // Update current position
+        }
+        // Continue scanning right from starting position
+        for (i = index + 1; i < n; ++i) {
+            printf("%d ", requests[i]);
+            head_movement += abs(current_pos - requests[i]); // Calculate head movement
+            current_pos = requests[i]; // Update current position
+        }
+    } else if (direction == 'R') {
+        // Scan right from starting position
+        for (i = index; i < n; ++i) {
+            printf("%d ", requests[i]);
+            head_movement += abs(current_pos - requests[i]); // Calculate head movement
+            current_pos = requests[i]; // Update current position
+        }
+        // Continue scanning left from starting position
+        for (i = index - 1; i >= 0; --i) {
+            printf("%d ", requests[i]);
+            head_movement += abs(current_pos - requests[i]); // Calculate head movement
+            current_pos = requests[i]; // Update current position
+        }
+    }
+
+    // Print total head movements
+    printf("\nTotal head movements: %d\n", head_movement);
+}
+
+int main() {
+    int requests[MAX_REQUESTS]; // Array to store disk requests
+    int n, start; // Variables for number of requests and starting position
+    char direction; // Variable for direction of movement
+
+    // Input number of disk requests
+    printf("Enter the total number of disk requests: ");
+    scanf("%d", &n);
+
+    // Input disk requests
+    printf("Enter the disk requests: ");
+    for (int i = 0; i < n; ++i) {
+        scanf("%d", &requests[i]);
+    }
+
+    // Input starting head position
+    printf("Enter the starting head position: ");
+    scanf("%d", &start);
+
+    // Input direction of movement
+    printf("Enter the direction (L for left, R for right): ");
+    scanf(" %c", &direction);
+
+    // Sort the requests
+    qsort(requests, n, sizeof(int), compare);
+
+    // Print the order of serving requests and total head movements
+    printf("Order of serving requests: ");
+    scan(requests, n, start, direction);
+
+    return 0;
+}
